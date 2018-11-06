@@ -1,2 +1,6 @@
+import * as Shared from "./shared";
+export { Shared };
 <% for(var i = 0; i < apis.length; i++) { var api = apis[i]; %>
-export * from "./PlayFab<%- api.name %>.js";<% } %>
+import * as <%- api.name %> from "./<%- api.name %>.js";
+export { <%- api.name %> };
+<% } %>

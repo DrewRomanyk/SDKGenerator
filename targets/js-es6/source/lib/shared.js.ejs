@@ -4,7 +4,7 @@ var https = require("https");
 export const sdk_version = "<%- sdkVersion %>";
 export const buildIdentifier = "<%- buildIdentifier %>";
 
-let settings = exports.settings = {
+export let settings = {
     productionUrl: ".playfabapi.com",
     verticalName: <%- getVerticalNameDefault() %>, // The name of a customer vertical. This is only for customers running a private cluster. Generally you shouldn't touch this
     titleId: null, // You must set this value for PlayFabSdk to work properly (Found in the Game Manager for your title, at the PlayFab Website)
@@ -21,7 +21,7 @@ let settings = exports.settings = {
     AD_TYPE_ANDROID_ID: "Adid",
 <% } %>};
 
-let _internalSettings = exports._internalSettings = {
+export let _internalSettings = {
     entityToken: null,
     sessionTicket: null,
     requestGetParams: {
@@ -30,12 +30,12 @@ let _internalSettings = exports._internalSettings = {
 };
 
 export function GetServerUrl() {
-    var baseUrl = exports.settings.productionUrl;
+    var baseUrl = settings.productionUrl;
     if (!(baseUrl.substring(0, 4) === "http")) {
-        if (exports.settings.verticalName) {
-            return "https://" + exports.settings.verticalName + baseUrl;
+        if (settings.verticalName) {
+            return "https://" + settings.verticalName + baseUrl;
         } else {
-            return "https://" + exports.settings.titleId + baseUrl;
+            return "https://" + settings.titleId + baseUrl;
         }
     } else {
         return baseUrl;
@@ -74,7 +74,7 @@ export function MakeRequest(urlStr, request, authType, authValue, callback) {
     options.headers = {
         "Content-Type": "application/json",
         "Content-Length": requestBody.length,
-        "X-PlayFabSDK": "NodeSDK-" + exports.sdk_version + "-" + exports.api_version
+        "X-PlayFabSDK": "NodeSDK-" + sdk_version
     };
 
     if (authType)
