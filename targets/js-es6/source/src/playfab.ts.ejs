@@ -23,14 +23,14 @@ export interface IPlayFabSuccessContainer<TResult extends IPlayFabResultCommon> 
 
 export interface ISettings {
     productionUrl: string,
-    verticalName: string | null,
-    titleId: string | null,
-    globalErrorHandler: string | null,
-    developerSecretKey: string | null,
+    verticalName: string | undefined,
+    titleId: string | undefined,
+    globalErrorHandler: string | undefined,
+    developerSecretKey: string | undefined,
 <% if (hasClientOptions) {
 %>
-    advertisingIdType: string | null,
-    advertisingIdValue: string | null,
+    advertisingIdType: string | undefined,
+    advertisingIdValue: string | undefined,
     disableAdvertising: boolean,
     AD_TYPE_IDFA: string,
     AD_TYPE_ANDROID_ID: string,
@@ -39,13 +39,13 @@ export interface ISettings {
 export let settings: ISettings = {
     productionUrl: ".playfabapi.com",
     verticalName: <%- getVerticalNameDefault() %>, // The name of a customer vertical. This is only for customers running a private cluster. Generally you shouldn't touch this
-    titleId: null, // You must set this value for PlayFabEs6Sdk to work properly (Found in the Game Manager for your title, at the PlayFab Website)
-    globalErrorHandler: null,
-    developerSecretKey: null, // You must set this value for PlayFabEs6Sdk to work properly (Found in the Game Manager for your title, at the PlayFab Website)
+    titleId: undefined, // You must set this value for PlayFabEs6Sdk to work properly (Found in the Game Manager for your title, at the PlayFab Website)
+    globalErrorHandler: undefined,
+    developerSecretKey: undefined, // You must set this value for PlayFabEs6Sdk to work properly (Found in the Game Manager for your title, at the PlayFab Website)
 <% if (hasClientOptions) {
 %>
-    advertisingIdType: null, // Set this to the appropriate AD_TYPE_X constant below
-    advertisingIdValue: null, // Set this to corresponding device value
+    advertisingIdType: undefined, // Set this to the appropriate AD_TYPE_X constant below
+    advertisingIdValue: undefined, // Set this to corresponding device value
 
     // disableAdvertising is provided for completeness, but changing it is not suggested
     // Disabling this may prevent your advertising-related PlayFab marketplace partners from working correctly
@@ -55,22 +55,22 @@ export let settings: ISettings = {
 <% } %>};
 
 interface IInternalSettings {
-    entityToken: string | null;
-    sessionTicket: string | null;
+    entityToken: string | undefined;
+    sessionTicket: string | undefined;
     requestGetParams: Record<string, string>,
 }
 
 /** @internal */
 export let _internalSettings: IInternalSettings = {
-    entityToken: null,
-    sessionTicket: null,
+    entityToken: undefined,
+    sessionTicket: undefined,
     requestGetParams: {
         sdk: "Es6SDK-" + sdk_version
     },
 };
 
 export function GetServerUrl(): string {
-    let baseUrl = settings.productionUrl;
+    const baseUrl = settings.productionUrl;
     if (!(baseUrl.substring(0, 4) === "http")) {
         if (settings.verticalName) {
             return "https://" + settings.verticalName + baseUrl;
@@ -85,9 +85,9 @@ export function GetServerUrl(): string {
 function getCompleteUrl(urlStr: string): string {
     const urlArr = [urlStr]; //make a new array for the URL
     const getParams = _internalSettings.requestGetParams;
-    if (getParams != null) {
+    if (getParams !== undefined) {
         let firstParam = true;
-        for (let key in getParams) {
+        for (const key in getParams) {
             if (firstParam) {
                 urlArr.push("?");
                 firstParam = false;
@@ -113,13 +113,14 @@ export function createErrorResponse(error: any): IPlayFabError {
     };
 }
 
-export function makeRequest<T extends IPlayFabResultCommon>(urlStr: string, request: IPlayFabRequestCommon | null, authType: string | null, authValue: string | null): Promise<T> {
+export function makeRequest<T extends IPlayFabResultCommon>(urlStr: string, request: IPlayFabRequestCommon | undefined, authType: string | undefined, authValue: string | undefined): Promise<T> {
     return new Promise<T>((resolve, reject) => {
         try {
-            if (request == null) {
-                request = {};
+            let req:IPlayFabRequestCommon = request as IPlayFabRequestCommon;
+            if (request === undefined || request === undefined) {
+                req = {};
             }
-            const requestBody = JSON.stringify(request);
+            const requestBody = JSON.stringify(req);
             const completeUrl = getCompleteUrl(urlStr);
             if (completeUrl.toLowerCase().indexOf("https:") !== 0) {
                 reject("Unsupported protocol");
@@ -134,7 +135,7 @@ export function makeRequest<T extends IPlayFabResultCommon>(urlStr: string, requ
             }
             xhr.onload = function() {
                 try {
-                    const responseJson = JSON.parse(this.responseText);
+                    const responseJson = JSON.parse(xhr.responseText);
                     if (responseJson.status === undefined && responseJson.data === undefined) {
                         reject(createErrorResponse("Not expected json response: " + JSON.stringify(responseJson)));
                     } else {
@@ -152,7 +153,7 @@ export function makeRequest<T extends IPlayFabResultCommon>(urlStr: string, requ
                 }
             }
             xhr.onerror = function() {
-                reject(createErrorResponse(this.responseText));
+                reject(createErrorResponse(xhr.responseText));
             }
             xhr.send(requestBody);
         } catch (error) {

@@ -1,7 +1,7 @@
 import * as playfab from "./playfab";
 <% for(var i = 0; i < apis.length; i++) { var api = apis[i]; %>
 import * as <%- api.fileName %> from "./<%- api.fileName %>.js";<% } %>
-let settings = playfab.settings;
+const settings = playfab.settings;
 
 export {
 	settings,

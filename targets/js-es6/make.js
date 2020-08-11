@@ -55,7 +55,7 @@ function getVerticalNameDefault() {
         return "\"" + sdkGlobals.verticalName + "\"";
     }
 
-    return "null";
+    return "undefined";
 }
 
 function getAuthParams(apiCall) {
@@ -67,7 +67,7 @@ function getAuthParams(apiCall) {
         return "\"X-SecretKey\", playfab.settings.developerSecretKey";
     else if (apiCall.auth === "SessionTicket")
         return "\"X-Authorization\", playfab._internalSettings.sessionTicket";
-    return "null, null";
+    return "undefined, undefined";
 }
 
 function getRequestActions(tabbing, apiCall) {
@@ -82,24 +82,24 @@ function getRequestActions(tabbing, apiCall) {
             + tabbing + "    authKey = \"X-EntityToken\"; authValue = playfab._internalSettings.entityToken;\n"
             + tabbing + "}\n";
     else if (apiCall.result === "LoginResult" || apiCall.request === "RegisterPlayFabUserRequest")
-        return tabbing + "request.TitleId = playfab.settings.titleId != null ? playfab.settings.titleId : request.TitleId;\n"
-            + tabbing + "if (request.TitleId == null) reject(playfab.errorTitleId);\n";
+        return tabbing + "request.TitleId = playfab.settings.titleId !== undefined && playfab.settings.titleId !== undefined ? playfab.settings.titleId : request.TitleId;\n"
+            + tabbing + "if (request.TitleId === undefined || request.TitleId === undefined) reject(playfab.errorTitleId);\n";
     else if (apiCall.auth === "SessionTicket")
-        return tabbing + "if (playfab._internalSettings.sessionTicket == null) reject(playfab.errorLoggedIn);\n";
+        return tabbing + "if (playfab._internalSettings.sessionTicket === undefined || playfab._internalSettings.sessionTicket === undefined) reject(playfab.errorLoggedIn);\n";
     else if (apiCall.auth === "SecretKey")
-        return tabbing + "if (playfab.settings.developerSecretKey == null) reject(playfab.errorSecretKey);\n";
+        return tabbing + "if (playfab.settings.developerSecretKey === undefined || playfab.settings.developerSecretKey === undefined) reject(playfab.errorSecretKey);\n";
     return "";
 }
 
 function getResultActions(tabbing, apiCall) {
     if (apiCall.url === "/Authentication/GetEntityToken")
-        return tabbing + "if (result != null)\n"
+        return tabbing + "if (result !== undefined)\n"
             + tabbing + "    playfab._internalSettings.entityToken = result.EntityToken !== undefined ? result.EntityToken : playfab._internalSettings.entityToken;\n";
     else if (apiCall.result === "LoginResult" || apiCall.result === "RegisterPlayFabUserResult")
-        return tabbing + "if (result != null) {\n"
+        return tabbing + "if (result !== undefined) {\n"
             + tabbing + "    playfab._internalSettings.sessionTicket = result.SessionTicket !== undefined ? result.SessionTicket : playfab._internalSettings.sessionTicket;\n"
-            + tabbing + "    playfab._internalSettings.entityToken = result.EntityToken !== undefined && result.EntityToken.EntityToken !== undefined ? result.EntityToken.EntityToken : playfab._internalSettings.entityToken;\n"
-            + tabbing + "    if (result.SettingsForUser != null) {\n"
+            + tabbing + "    playfab._internalSettings.entityToken = result.EntityToken !== undefined ? result.EntityToken.EntityToken : playfab._internalSettings.entityToken;\n"
+            + tabbing + "    if (result.SettingsForUser !== undefined) {\n"
             + tabbing + "        _MultiStepClientLogin(result.SettingsForUser.NeedsAttribution);\n"
             + tabbing + "    }"
             + tabbing + "}";
@@ -116,7 +116,7 @@ function getUrlAccessor() {
 function getDeprecationAttribute(tabbing, apiObj) {
     var isDeprecated = apiObj.hasOwnProperty("deprecation");
 
-    if (isDeprecated && apiObj.deprecation.ReplacedBy !== null)
+    if (isDeprecated && apiObj.deprecation.ReplacedBy !== undefined)
         return tabbing + "/**\n"
             + tabbing + " * @deprecated Please use " + apiObj.deprecation.ReplacedBy + " instead. \n"
             + tabbing + " */\n";
@@ -189,7 +189,7 @@ function getPropertyTsType(property, datatype) {
     if (property.collection === "array")
         output += "[]";
     else if (property.collection === "map" && output === "string")
-        output = "{ [key: string]: string | null }";
+        output = "{ [key: string]: string | undefined }";
     else if (property.collection === "map")
         output = "{ [key: string]: " + output + " }";
     else if (property.collection)

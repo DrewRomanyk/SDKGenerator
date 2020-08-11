@@ -7,7 +7,7 @@ export let settings = playfab.settings;
 
 <% if (hasClientOptions) { %>
 export function IsClientLoggedIn (): boolean {
-    return playfab._internalSettings.sessionTicket != null && playfab._internalSettings.sessionTicket.length > 0
+    return playfab._internalSettings.sessionTicket !== undefined && playfab._internalSettings.sessionTicket !== undefined && playfab._internalSettings.sessionTicket.length > 0
 }
 <% }
 for(var i in api.calls) { var apiCall = api.calls[i]; %>
@@ -38,7 +38,9 @@ function _MultiStepClientLogin(needsAttribution: boolean): void {
         } else {
             return;
 		}
-        AttributeInstall(request);
+        AttributeInstall(request).catch(err=>{
+            console.log(err);
+        });
     }
 }<% } %>
 <% for(var dIdx in api.datatypes) { var datatype = api.datatypes[dIdx];
